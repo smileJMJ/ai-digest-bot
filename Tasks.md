@@ -29,12 +29,12 @@
 
 ## Phase 4: 요약 생성 (Summarizer)
 
-- [ ] **T-12** `src/summarizer/gemini.py` 작성 — Google Gemini API(`gemini-2.0-flash`) 호출
-- [ ] **T-13** 요약 프롬프트 설계
+- [x] **T-12** `src/summarizer/gemini.py` 작성 — Google Gemini API(`gemini-2.0-flash`) 호출
+- [x] **T-13** 요약 프롬프트 설계
   - 입력: 기사 제목 + 본문(또는 스니펫) + URL
   - 출력: 500자 이내 한국어 요약
   - 제약: 추측/의견 배제, 사실만 요약
-- [ ] **T-14** 요약 실패(API 오류) 시 fallback 처리 — 원본 스니펫을 그대로 사용
+- [x] **T-14** 요약 실패(API 오류) 시 fallback 처리 — 원본 스니펫을 그대로 사용
 
 ---
 
