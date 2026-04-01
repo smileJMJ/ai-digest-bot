@@ -40,15 +40,15 @@
 
 ## Phase 5: Slack 연동
 
-- [ ] **T-15** Slack 앱 생성 및 권한 설정
+- [x] **T-15** Slack 앱 생성 및 권한 설정
   - Scopes: `channels:manage`, `channels:read`, `chat:write`, `chat:write.public`
   - Bot Token 및 Signing Secret 발급
   - Interactive Components 활성화 및 Request URL 설정
-- [ ] **T-16** `src/slack/channel.py` 작성 — `ai-digest` 채널 존재 확인 및 없을 경우 자동 생성
-- [ ] **T-17** `src/slack/sender.py` 작성 — Block Kit 메시지 전송 함수 구현
+- [x] **T-16** `src/slack/channel.py` 작성 — `ai-digest` 채널 존재 확인 및 없을 경우 자동 생성
+- [x] **T-17** `src/slack/sender.py` 작성 — Block Kit 메시지 전송 함수 구현
   - 헤더 메시지 (날짜, 총 항목 수)
   - 각 항목: 제목 + 한국어 요약 + "🔗 원문 보기" 링크 버튼 + "📎 Notion에 저장" 액션 버튼
-- [ ] **T-18** Block Kit JSON 구조 설계
+- [x] **T-18** Block Kit JSON 구조 설계
   - `section` 블록: 요약 텍스트
   - `actions` 블록: 원문 링크 버튼(url 타입) + Notion 저장 버튼(button 타입, value에 JSON 인코딩)
   - `divider` 블록: 항목 구분선
