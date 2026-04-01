@@ -11,11 +11,11 @@
 
 ## Phase 2: 정보 수집 (Collector)
 
-- [ ] **T-05** `src/collector/sources.py` 작성 — RSS 피드 URL 목록 정의
+- [x] **T-05** `src/collector/sources.py` 작성 — RSS 피드 URL 목록 정의
   - OpenAI Blog, Google AI Blog, HuggingFace Blog, TechCrunch AI, Ars Technica AI
-- [ ] **T-06** `src/collector/rss.py` 작성 — `feedparser`로 RSS 피드 파싱, 최근 48시간 필터 적용
-- [ ] **T-07** `src/collector/search.py` 작성 — Tavily API로 "AI latest news" 웹 검색, 상위 결과 반환
-- [ ] **T-08** 수집 결과를 통합하는 `collect_all()` 함수 작성 — RSS + 검색 결과 병합 후 중복 URL 제거
+- [x] **T-06** `src/collector/rss.py` 작성 — `feedparser`로 RSS 피드 파싱, 최근 48시간 필터 적용
+- [x] **T-07** `src/collector/search.py` 작성 — Tavily API로 "AI latest news" 웹 검색, 상위 결과 반환
+- [x] **T-08** 수집 결과를 통합하는 `collect_all()` 함수 작성 — RSS + 검색 결과 병합 후 중복 URL 제거
 
 ---
 
