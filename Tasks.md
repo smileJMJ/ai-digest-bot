@@ -57,11 +57,11 @@
 
 ## Phase 6: Notion 연동
 
-- [ ] **T-19** Notion Integration 생성 및 Database 설정
+- [x] **T-19** Notion Integration 생성 및 Database 설정
   - Notion 내 새 Database 생성 (Title, Summary, URL, Saved At, Source 컬럼)
   - Integration을 Database에 Share
   - API Key 및 Database ID 수집
-- [ ] **T-20** `src/notion/client.py` 작성 — `notion-client`로 Database에 페이지 생성
+- [x] **T-20** `src/notion/client.py` 작성 — `notion-client`로 Database에 페이지 생성
   - 입력: title, summary, url, source
   - 중복 URL 체크 후 이미 존재하면 예외 반환
 
@@ -69,10 +69,10 @@
 
 ## Phase 7: Slack Interactivity 웹훅 서버
 
-- [ ] **T-21** `src/server.py` 작성 — FastAPI 앱 정의
+- [x] **T-21** `src/server.py` 작성 — FastAPI 앱 정의
   - `POST /slack/interactions` 엔드포인트
   - Slack Signing Secret으로 요청 서명 검증
-- [ ] **T-22** `src/slack/interactions.py` 작성 — 버튼 클릭 이벤트 처리 로직
+- [x] **T-22** `src/slack/interactions.py` 작성 — 버튼 클릭 이벤트 처리 로직
   - `action_id: save_to_notion` 인식
   - payload의 `value`에서 title, summary, url, source 파싱
   - `notion/client.py` 호출하여 저장
@@ -83,19 +83,19 @@
 
 ## Phase 8: 스케줄러 및 통합 실행
 
-- [ ] **T-23** `src/scheduler.py` 작성 — APScheduler CronTrigger 설정
+- [x] **T-23** `src/scheduler.py` 작성 — APScheduler CronTrigger 설정
   - KST 기준 09:00 / 21:00 실행 (UTC 00:00 / 12:00)
-- [ ] **T-24** `src/main.py` 작성 — 스케줄러 + FastAPI 서버 동시 실행 (`asyncio`)
+- [x] **T-24** `src/main.py` 작성 — 스케줄러 + FastAPI 서버 동시 실행 (`asyncio`)
   - `--run-now` 플래그 지원 (즉시 1회 실행)
-- [ ] **T-25** 전체 파이프라인 연결 — collect → filter → summarize → send → save URL
+- [x] **T-25** 전체 파이프라인 연결 — collect → filter → summarize → send → save URL
 
 ---
 
 ## Phase 9: 로깅 및 에러 처리
 
-- [ ] **T-26** Python `logging` 모듈 설정 — 단계별 로그 (수집 N건, 필터 후 N건, 전송 N건, Notion 저장 N건)
-- [ ] **T-27** 단계별 예외처리 — 수집/요약/전송 중 일부 항목 실패 시 나머지 계속 진행
-- [ ] **T-28** 전송 완료된 URL SQLite에 저장 (sent_at 타임스탬프 포함)
+- [x] **T-26** Python `logging` 모듈 설정 — 단계별 로그 (수집 N건, 필터 후 N건, 전송 N건, Notion 저장 N건)
+- [x] **T-27** 단계별 예외처리 — 수집/요약/전송 중 일부 항목 실패 시 나머지 계속 진행
+- [x] **T-28** 전송 완료된 URL SQLite에 저장 (sent_at 타임스탬프 포함)
 
 ---
 
