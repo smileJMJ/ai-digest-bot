@@ -1,0 +1,65 @@
+services:
+  # FastAPI 웹 서버 — Slack Notion 버튼 webhook 수신
+  - type: web
+    name: ai-digest-bot
+    runtime: python
+    buildCommand: pip install -e .
+    startCommand: uvicorn src.server:app --host 0.0.0.0 --port $PORT
+    plan: free
+    envVars:
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: SLACK_CHANNEL_NAME
+        value: ai-digest
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: NOTION_API_KEY
+        sync: false
+      - key: NOTION_DATABASE_ID
+        sync: false
+      - key: MAX_ITEMS_PER_DIGEST
+        value: "20"
+      - key: MAX_SUMMARY_CHARS
+        value: "500"
+      - key: SCHEDULE_INTERVAL_HOURS
+        value: "12"
+      - key: PORT
+        value: "8000"
+    pythonVersion: "3.11.9"
+
+  # Cron Job — 12시간마다 AI 다이제스트 전송
+  - type: cron
+    name: ai-digest-cron
+    runtime: python
+    buildCommand: pip install -e .
+    startCommand: python -m src.main --run-now
+    schedule: "0 0,12 * * *"   # KST 09:00(UTC 00:00), 21:00(UTC 12:00)
+    plan: free
+    envVars:
+      - key: SLACK_BOT_TOKEN
+        sync: false
+      - key: SLACK_SIGNING_SECRET
+        sync: false
+      - key: SLACK_CHANNEL_NAME
+        value: ai-digest
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
+      - key: NOTION_API_KEY
+        sync: false
+      - key: NOTION_DATABASE_ID
+        sync: false
+      - key: MAX_ITEMS_PER_DIGEST
+        value: "20"
+      - key: MAX_SUMMARY_CHARS
+        value: "500"
+      - key: SCHEDULE_INTERVAL_HOURS
+        value: "12"
+      - key: PORT
+        value: "8000"
+    pythonVersion: "3.11.9"
