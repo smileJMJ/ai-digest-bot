@@ -37,7 +37,6 @@ services:
     buildCommand: pip install -e .
     startCommand: python -m src.main --run-now
     schedule: "0 0,12 * * *"   # KST 09:00(UTC 00:00), 21:00(UTC 12:00)
-    plan: free
     envVars:
       - key: SLACK_BOT_TOKEN
         sync: false
