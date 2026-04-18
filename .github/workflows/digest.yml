@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 0,12 * * *"   # KST 09:00(UTC 00:00), 21:00(UTC 12:00)
   workflow_dispatch:          # 수동 실행 가능
+    inputs:
+      test_mode:
+        description: "테스트 모드 (1건만 전송)"
+        type: boolean
+        default: true
 
 jobs:
   run-digest:
@@ -35,4 +40,9 @@ jobs:
           SLACK_CHANNEL_NAME: ${{ secrets.SLACK_CHANNEL_NAME }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-        run: python -m src.main --run-now
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.test_mode }}" = "true" ]; then
+            python -m src.main --test
+          else
+            python -m src.main --run-now
+          fi
