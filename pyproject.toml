@@ -12,23 +12,14 @@ dependencies = [
     "slack-sdk>=3.27",
     # Google Gemini
     "google-genai>=1.0",
-    # Notion
-    "notion-client>=2.2",
-    # Scheduling
-    "APScheduler>=3.10",
     # Web search
     "tavily-python>=0.5",
     # RSS
     "feedparser>=6.0",
     # Async HTTP
     "httpx>=0.27",
-    # Web server (Slack Interactive Components)
-    "fastapi>=0.111",
-    "uvicorn[standard]>=0.30",
     # Config
     "pydantic-settings>=2.3",
-    # python-multipart: FastAPI form 파싱 (Slack payload)
-    "python-multipart>=0.0.9",
 ]
 
 [project.optional-dependencies]

@@ -1,0 +1,38 @@
+name: AI Digest Bot
+
+on:
+  schedule:
+    - cron: "0 0,12 * * *"   # KST 09:00(UTC 00:00), 21:00(UTC 12:00)
+  workflow_dispatch:          # 수동 실행 가능
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Restore SQLite cache
+        uses: actions/cache@v4
+        with:
+          path: data/digest.db
+          key: digest-db-${{ github.run_id }}
+          restore-keys: |
+            digest-db-
+
+      - name: Install dependencies
+        run: pip install -e .
+
+      - name: Run digest pipeline
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_SIGNING_SECRET: ${{ secrets.SLACK_SIGNING_SECRET }}
+          SLACK_CHANNEL_NAME: ${{ secrets.SLACK_CHANNEL_NAME }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        run: python -m src.main --run-now

@@ -1,4 +1,3 @@
-import json
 import logging
 from datetime import datetime, timedelta, timezone
 
@@ -24,14 +23,6 @@ def _get_client() -> WebClient:
 
 def _build_item_blocks(item: FeedItem, summary: str) -> list[dict]:
     """항목 1개에 대한 Block Kit 블록을 반환한다."""
-    # 버튼에 전달할 데이터 (512자 제한)
-    value = json.dumps({
-        "title": item.title[:100],
-        "summary": summary[:400],
-        "url": item.url,
-        "source": item.source,
-    }, ensure_ascii=False)
-
     return [
         {
             "type": "section",
@@ -48,13 +39,6 @@ def _build_item_blocks(item: FeedItem, summary: str) -> list[dict]:
                     "text": {"type": "plain_text", "text": "🔗 원문 보기"},
                     "url": item.url,
                     "action_id": "open_url",
-                },
-                {
-                    "type": "button",
-                    "text": {"type": "plain_text", "text": "📎 Notion에 저장"},
-                    "action_id": "save_to_notion",
-                    "value": value,
-                    "style": "primary",
                 },
             ],
         },
