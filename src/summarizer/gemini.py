@@ -21,9 +21,10 @@ def _get_client() -> genai.Client:
 
 
 _PROMPT_TEMPLATE = """\
-아래 기사를 {max_chars}자 이내의 한국어로 요약해줘.
+아래 기사를 반드시 한국어로 {max_chars}자 이내로 요약해줘. 영어로 출력하면 안 돼.
 
 규칙:
+- 반드시 한국어로만 작성
 - 사실만 포함하고 추측·개인 의견은 절대 쓰지 마
 - 핵심 내용(무엇이, 왜 중요한지)을 간결하게
 - 원문의 주요 수치·고유명사는 그대로 유지
@@ -40,6 +41,10 @@ def summarize(item: FeedItem, retry: int = 3) -> str:
     Gemini API로 FeedItem을 한국어로 요약한다.
     429(속도 제한) 시 최대 retry회 재시도하며, 최종 실패 시 제목을 한국어로 번역해 반환한다.
     """
+    # snippet이 없으면 제목 번역 fallback
+    if not item.snippet.strip():
+        return _translate_title(item.title)
+
     prompt = _PROMPT_TEMPLATE.format(
         max_chars=settings.max_summary_chars,
         title=item.title,
