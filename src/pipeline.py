@@ -5,7 +5,7 @@ from src.db import init_db, mark_sent
 from src.filter import apply_filters
 from src.slack.channel import get_or_create_channel
 from src.slack.sender import send_digest
-from src.summarizer.gemini import GeminiQuotaExhaustedError, summarize_all
+from src.summarizer.gemini import summarize_all
 
 logger = logging.getLogger(__name__)
 
@@ -36,12 +36,8 @@ async def run_pipeline(max_items: int | None = None, test_mode: bool = False) ->
     if test_mode:
         filtered = filtered[:1]
 
-    # 3. 요약 (일일 할당량 소진 시 Slack 전송하지 않고 종료)
-    try:
-        summarized = summarize_all(filtered)
-    except GeminiQuotaExhaustedError:
-        logger.error("Gemini 일일 할당량 소진 — Slack 전송 없이 종료 (영어 메시지 방지)")
-        return
+    # 3. 요약 (실패 시 원문 + "(gemini api 호출 실패)" 반환, 항상 전송)
+    summarized = summarize_all(filtered)
 
     # 4. Slack 채널 확인/생성
     channel_id = get_or_create_channel()

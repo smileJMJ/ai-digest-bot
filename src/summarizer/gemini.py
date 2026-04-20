@@ -1,5 +1,4 @@
 import logging
-import re
 import time
 
 from google import genai
@@ -12,9 +11,7 @@ logger = logging.getLogger(__name__)
 
 _client: genai.Client | None = None
 
-
-class GeminiQuotaExhaustedError(Exception):
-    """일일 Gemini API 할당량이 소진되었을 때 발생."""
+_FAIL_SUFFIX = "\n_(gemini api 호출 실패)_"
 
 
 def _get_client() -> genai.Client:
@@ -40,20 +37,30 @@ URL: {url}
 """
 
 
-def _is_daily_quota_error(err: str) -> bool:
-    """일일 할당량 소진 에러인지 확인 (RPM 초과와 구분)."""
-    return "GenerateRequestsPerDayPerProjectPerModel" in err
+def _fallback_text(item: FeedItem) -> str:
+    """Gemini 실패 시 원문 snippet(또는 제목)을 그대로 반환."""
+    text = item.snippet.strip() or item.title
+    if len(text) > settings.max_summary_chars:
+        text = text[: settings.max_summary_chars - 1] + "…"
+    return text + _FAIL_SUFFIX
 
 
-def summarize(item: FeedItem, retry: int = 3) -> str:
+def summarize(item: FeedItem) -> str:
     """
     Gemini API로 FeedItem을 한국어로 요약한다.
-    - RPM(분당 요청) 초과 시: 대기 후 재시도
-    - 일일 할당량 소진 시: 즉시 GeminiQuotaExhaustedError 발생 (재시도 없음)
+    실패(할당량 소진, 오류 등) 시 재시도 없이 원문 내용 + "(gemini api 호출 실패)" 반환.
     """
-    # snippet이 없으면 제목 번역 fallback
     if not item.snippet.strip():
-        return _translate_title(item.title)
+        try:
+            resp = _get_client().models.generate_content(
+                model="gemini-2.0-flash",
+                contents=f"다음 제목을 한국어로 번역해줘. 번역문만 출력해:\n{item.title}",
+                config=types.GenerateContentConfig(temperature=0.1, max_output_tokens=100),
+            )
+            return resp.text.strip()
+        except Exception as e:
+            logger.warning("Gemini 제목 번역 실패 [%s]: %s", item.url, e)
+            return _fallback_text(item)
 
     prompt = _PROMPT_TEMPLATE.format(
         max_chars=settings.max_summary_chars,
@@ -61,68 +68,31 @@ def summarize(item: FeedItem, retry: int = 3) -> str:
         snippet=item.snippet[:2000],
         url=item.url,
     )
-    for attempt in range(retry):
-        try:
-            response = _get_client().models.generate_content(
-                model="gemini-2.0-flash",
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    max_output_tokens=600,
-                ),
-            )
-            summary = response.text.strip()
-            if len(summary) > settings.max_summary_chars:
-                summary = summary[: settings.max_summary_chars - 1] + "…"
-            return summary
-        except Exception as e:
-            err = str(e)
-            if "429" not in err:
-                logger.warning("Gemini 요약 실패 [%s]: %s — 제목 번역 fallback", item.url, e)
-                return _translate_title(item.title)
-
-            # 일일 할당량 소진 → 재시도 없이 즉시 중단
-            if _is_daily_quota_error(err):
-                logger.error("Gemini 일일 할당량 소진 — 파이프라인 중단")
-                raise GeminiQuotaExhaustedError("일일 API 할당량 소진")
-
-            # RPM 초과 → 대기 후 재시도
-            if attempt < retry - 1:
-                match = re.search(r"retry in (\d+(?:\.\d+)?)s", err)
-                wait = int(float(match.group(1))) + 2 if match else 60
-                logger.warning("Gemini RPM 초과 — %d초 후 재시도 (%d/%d)", wait, attempt + 1, retry)
-                time.sleep(wait)
-            else:
-                logger.warning("Gemini 요약 실패 [%s]: RPM 초과, 재시도 소진 — 제목 번역 fallback", item.url)
-                return _translate_title(item.title)
-
-    return _translate_title(item.title)
-
-
-def _translate_title(title: str) -> str:
-    """제목을 한국어로 번역한다. 실패 시 원문 반환."""
     try:
-        resp = _get_client().models.generate_content(
+        response = _get_client().models.generate_content(
             model="gemini-2.0-flash",
-            contents=f"다음 제목을 한국어로 번역해줘. 번역문만 출력해:\n{title}",
-            config=types.GenerateContentConfig(temperature=0.1, max_output_tokens=100),
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.3,
+                max_output_tokens=600,
+            ),
         )
-        return resp.text.strip()
-    except Exception:
-        return title
+        summary = response.text.strip()
+        if len(summary) > settings.max_summary_chars:
+            summary = summary[: settings.max_summary_chars - 1] + "…"
+        return summary
+    except Exception as e:
+        logger.warning("Gemini 요약 실패 [%s]: %s — 원문 전송", item.url, e)
+        return _fallback_text(item)
 
 
 def summarize_all(items: list[FeedItem]) -> list[tuple[FeedItem, str]]:
-    """모든 항목을 순차 요약하고 (item, summary) 튜플 리스트로 반환한다.
-
-    Raises:
-        GeminiQuotaExhaustedError: 일일 할당량 소진 시 즉시 발생.
-    """
+    """모든 항목을 순차 요약하고 (item, summary) 튜플 리스트로 반환한다."""
     results = []
     for i, item in enumerate(items):
         if i > 0:
             time.sleep(4)  # 15 RPM 한도 준수 (60초 / 15 = 4초 간격)
-        summary = summarize(item)  # GeminiQuotaExhaustedError는 그대로 전파
+        summary = summarize(item)
         results.append((item, summary))
         logger.debug("요약 완료 (%d/%d): %s", i + 1, len(items), item.title[:40])
     logger.info("요약 완료: 총 %d건", len(results))
