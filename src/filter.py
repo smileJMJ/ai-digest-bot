@@ -20,18 +20,19 @@ def _is_speculative(item: FeedItem) -> bool:
     return bool(_SPECULATIVE_PATTERNS.search(item.title + " " + item.snippet))
 
 
-def apply_filters(items: list[FeedItem]) -> list[FeedItem]:
+def apply_filters(items: list[FeedItem], test_mode: bool = False) -> list[FeedItem]:
     """
-    1. 이미 전송된 URL 제거 (sent_urls DB, 7일 이내)
+    1. 이미 전송된 URL 제거 (sent_urls DB, 7일 이내) — test_mode 시 건너뜀
     2. 추측성/의견성 콘텐츠 제거
     3. score(인기/관련도) 내림차순 정렬
     4. 최대 MAX_ITEMS_PER_DIGEST 개로 슬라이싱
     """
     before = len(items)
 
-    # 1. 전송 이력 필터
-    items = [i for i in items if not is_sent(i.url)]
-    logger.debug("전송 이력 필터: %d → %d건", before, len(items))
+    # 1. 전송 이력 필터 (테스트 모드에서는 건너뜀)
+    if not test_mode:
+        items = [i for i in items if not is_sent(i.url)]
+        logger.debug("전송 이력 필터: %d → %d건", before, len(items))
 
     # 2. 품질 필터 (추측성 제거)
     before = len(items)

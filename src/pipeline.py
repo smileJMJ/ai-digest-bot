@@ -28,7 +28,7 @@ async def run_pipeline(max_items: int | None = None, test_mode: bool = False) ->
         return
 
     # 2. 필터링
-    filtered = apply_filters(raw_items)
+    filtered = apply_filters(raw_items, test_mode=test_mode)
     if not filtered:
         logger.warning("필터 후 항목 없음 — 파이프라인 종료")
         return
