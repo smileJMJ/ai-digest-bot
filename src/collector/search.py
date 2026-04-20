@@ -21,16 +21,24 @@ def _get_client() -> TavilyClient:
     return _client
 
 
-def search_ai_news() -> list[FeedItem]:
+def search_ai_news(test_mode: bool = False) -> list[FeedItem]:
+    """Tavily로 AI 뉴스를 검색한다.
+
+    Args:
+        test_mode: True이면 첫 번째 쿼리에서 1건만 가져오고 나머지 쿼리는 건너뜀.
+    """
     client = _get_client()
     results: list[FeedItem] = []
 
-    for query in SEARCH_QUERIES:
+    queries = SEARCH_QUERIES[:1] if test_mode else SEARCH_QUERIES
+    max_results = 1 if test_mode else 10
+
+    for query in queries:
         try:
             response = client.search(
                 query=query,
                 search_depth="advanced",
-                max_results=10,
+                max_results=max_results,
                 include_answer=False,
             )
         except Exception as e:
@@ -47,6 +55,7 @@ def search_ai_news() -> list[FeedItem]:
                 snippet=r.get("content", "").strip()[:1000],
                 source="Search",
                 published_at=datetime.now(KST),
+                score=float(r.get("score", 0.0)),
             ))
 
         logger.debug("검색 [%s]: %d건", query, len(response.get("results", [])))

@@ -24,7 +24,8 @@ def apply_filters(items: list[FeedItem]) -> list[FeedItem]:
     """
     1. 이미 전송된 URL 제거 (sent_urls DB, 7일 이내)
     2. 추측성/의견성 콘텐츠 제거
-    3. 최대 MAX_ITEMS_PER_DIGEST 개로 슬라이싱
+    3. score(인기/관련도) 내림차순 정렬
+    4. 최대 MAX_ITEMS_PER_DIGEST 개로 슬라이싱
     """
     before = len(items)
 
@@ -37,7 +38,10 @@ def apply_filters(items: list[FeedItem]) -> list[FeedItem]:
     items = [i for i in items if not _is_speculative(i)]
     logger.debug("품질 필터: %d → %d건", before, len(items))
 
-    # 3. 최대 개수 슬라이싱
+    # 3. 인기/관련도 높은 순 정렬 (Tavily score 기준, RSS는 0.0)
+    items.sort(key=lambda x: x.score, reverse=True)
+
+    # 4. 최대 개수 슬라이싱
     items = items[: settings.max_items_per_digest]
     logger.info("필터 완료: 최종 %d건", len(items))
 

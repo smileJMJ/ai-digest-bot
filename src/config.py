@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     tavily_api_key: str
 
     # Limits
-    max_items_per_digest: int = Field(default=20, ge=1, le=20)
+    max_items_per_digest: int = Field(default=10, ge=1, le=20)
     max_summary_chars: int = Field(default=500, ge=100, le=1000)
 
 

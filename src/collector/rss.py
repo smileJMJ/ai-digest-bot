@@ -20,6 +20,7 @@ class FeedItem:
     snippet: str
     source: str
     published_at: datetime
+    score: float = 0.0  # Tavily relevance score (높을수록 인기/관련도 높음)
 
 
 def _parse_published(entry) -> datetime | None:
