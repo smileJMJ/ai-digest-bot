@@ -66,9 +66,10 @@ def get_or_create_channel() -> str:
                     if not ch.get("is_member"):
                         client.conversations_join(channel=channel_id)
                     return channel_id
-    except SlackApiError as e:
-        logger.error("채널 목록 조회 실패: %s", e.response["error"])
-        raise
+    except Exception as e:
+        # 채널 목록 조회 실패 시 채널 이름으로 직접 전송 시도
+        logger.warning("채널 목록 조회 실패, 채널 이름으로 fallback: %s", e)
+        return f"#{channel_name}"
 
     # 2. 없으면 생성 후 멤버 초대
     try:
