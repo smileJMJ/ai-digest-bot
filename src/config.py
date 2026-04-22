@@ -14,8 +14,8 @@ class Settings(BaseSettings):
     slack_signing_secret: str = ""
     slack_channel_name: str = "ai-digest"
 
-    # Gemini
-    gemini_api_key: str
+    # Groq
+    groq_api_key: str
 
     # Tavily
     tavily_api_key: str
